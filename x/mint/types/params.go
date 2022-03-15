@@ -147,10 +147,7 @@ func validateInflationLimitChange(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.LT(sdk.ZeroDec().Sub(sdk.OneDec())) {
-		return fmt.Errorf("inflation rate change too small: %s", v)
-	}
-	if v.GT(sdk.OneDec()) {
+	if v.Abs().GT(sdk.OneDec()) {
 		return fmt.Errorf("inflation rate change too large: %s", v)
 	}
 
