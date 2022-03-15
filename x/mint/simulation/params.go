@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	keyInflationRateChange = "InflationRateChange"
-	keyInflationMax        = "InflationMax"
-	keyInflationMin        = "InflationMin"
-	keyGoalBonded          = "GoalBonded"
+	keyInflationRateChange  = "InflationRateChange"
+	keyInflationMax         = "InflationMax"
+	keyInflationMin         = "InflationMin"
+	keyGoalBonded           = "GoalBonded"
+	keyInflationLimitChange = "InflationLimitChange"
 )
 
 // ParamChanges defines the parameters that can be modified by param change proposals
@@ -41,6 +42,11 @@ func ParamChanges(r *rand.Rand) []simtypes.ParamChange {
 		simulation.NewSimParamChange(types.ModuleName, keyGoalBonded,
 			func(r *rand.Rand) string {
 				return fmt.Sprintf("\"%s\"", GenGoalBonded(r))
+			},
+		),
+		simulation.NewSimParamChange(types.ModuleName, keyInflationLimitChange,
+			func(r *rand.Rand) string {
+				return fmt.Sprintf("\"%s\"", GenInflationLimitChange(r))
 			},
 		),
 	}

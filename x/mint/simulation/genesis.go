@@ -14,11 +14,12 @@ import (
 
 // Simulation parameter constants
 const (
-	Inflation           = "inflation"
-	InflationRateChange = "inflation_rate_change"
-	InflationMax        = "inflation_max"
-	InflationMin        = "inflation_min"
-	GoalBonded          = "goal_bonded"
+	Inflation            = "inflation"
+	InflationRateChange  = "inflation_rate_change"
+	InflationMax         = "inflation_max"
+	InflationMin         = "inflation_min"
+	GoalBonded           = "goal_bonded"
+	InflationLimitChange = "inflation_limit_change"
 )
 
 // GenInflation randomized Inflation
@@ -29,6 +30,11 @@ func GenInflation(r *rand.Rand) sdk.Dec {
 // GenInflationRateChange randomized InflationRateChange
 func GenInflationRateChange(r *rand.Rand) sdk.Dec {
 	return sdk.NewDecWithPrec(int64(r.Intn(99)), 2)
+}
+
+// GenInflationLimitChange randomized InflationLimitChange
+func GenInflationLimitChange(r *rand.Rand) sdk.Dec {
+	return sdk.NewDecWithPrec(int64(r.Intn(198))-99, 2)
 }
 
 // GenInflationMax randomized InflationMax
@@ -80,9 +86,15 @@ func RandomizedGenState(simState *module.SimulationState) {
 		func(r *rand.Rand) { goalBonded = GenGoalBonded(r) },
 	)
 
+	var inflationLimitChange sdk.Dec
+	simState.AppParams.GetOrGenerate(
+		simState.Cdc, InflationLimitChange, &inflationLimitChange, simState.Rand,
+		func(r *rand.Rand) { inflationLimitChange = GenInflationLimitChange(r) },
+	)
+
 	mintDenom := sdk.DefaultBondDenom
 	blocksPerYear := uint64(60 * 60 * 8766 / 5)
-	params := types.NewParams(mintDenom, inflationRateChange, inflationMax, inflationMin, goalBonded, blocksPerYear)
+	params := types.NewParams(mintDenom, inflationRateChange, inflationMax, inflationMin, goalBonded, inflationLimitChange, blocksPerYear)
 
 	mintGenesis := types.NewGenesisState(types.InitialMinter(inflation), params)
 

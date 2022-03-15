@@ -46,7 +46,39 @@ func TestNextInflation(t *testing.T) {
 	for i, tc := range tests {
 		minter.Inflation = tc.setInflation
 
-		inflation := minter.NextInflationRate(params, tc.bondedRatio)
+		inflation := minter.NextInflationRate(params, tc.bondedRatio, 0)
+		diffInflation := inflation.Sub(tc.setInflation)
+
+		require.True(t, diffInflation.Equal(tc.expChange),
+			"Test Index: %v\nDiff:  %v\nExpected: %v\n", i, diffInflation, tc.expChange)
+	}
+}
+
+func TestInflationLimitChange(t *testing.T) {
+	minter := DefaultInitialMinter()
+	params := DefaultParams()
+	blocksPerYr := sdk.NewDec(int64(params.BlocksPerYear))
+
+	// Governing Mechanism:
+	//    inflationRateChangePerYear = (1- BondedRatio/ GoalBonded) * MaxInflationRateChange
+
+	tests := []struct {
+		bondedRatio, setInflation, expChange sdk.Dec
+		blockheight                          uint64
+	}{
+		// with 0% bonded atom supply the inflation should increase by InflationRateChange
+		{sdk.NewDecWithPrec(67, 2), sdk.NewDecWithPrec(20, 2), sdk.ZeroDec(), 0},
+
+		{sdk.NewDecWithPrec(67, 2), sdk.NewDecWithPrec(20, 2), sdk.ZeroDec().Sub(sdk.NewDecWithPrec(20, 2).Mul(sdk.NewDecWithPrec(10, 2).Quo(blocksPerYr))), 1},
+
+		{sdk.NewDecWithPrec(67, 2), sdk.NewDecWithPrec(20, 2), sdk.ZeroDec().Sub(sdk.NewDecWithPrec(20, 2).Mul(sdk.NewDecWithPrec(10, 2).Quo(blocksPerYr).Mul(sdk.NewDec(blocksPerYr.TruncateInt64() / 2)))), uint64(blocksPerYr.TruncateInt64() / 2)},
+		{sdk.NewDecWithPrec(67, 2), sdk.NewDecWithPrec(20, 2), sdk.ZeroDec().Sub(sdk.NewDecWithPrec(2, 2)), uint64(blocksPerYr.TruncateInt64())},
+		{sdk.NewDecWithPrec(67, 2), sdk.NewDecWithPrec(20, 2), sdk.ZeroDec().Sub(sdk.NewDecWithPrec(38, 3)), uint64(blocksPerYr.TruncateInt64()) * 2},
+	}
+	for i, tc := range tests {
+		minter.Inflation = tc.setInflation
+
+		inflation := minter.NextInflationRate(params, tc.bondedRatio, tc.blockheight)
 		diffInflation := inflation.Sub(tc.setInflation)
 
 		require.True(t, diffInflation.Equal(tc.expChange),
@@ -113,7 +145,7 @@ func BenchmarkNextInflation(b *testing.B) {
 
 	// run the NextInflationRate function b.N times
 	for n := 0; n < b.N; n++ {
-		minter.NextInflationRate(params, bondedRatio)
+		minter.NextInflationRate(params, bondedRatio, 0)
 	}
 
 }
