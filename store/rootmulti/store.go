@@ -740,7 +740,7 @@ func (rs *Store) Snapshot(height uint64, format uint32) (<-chan io.ReadCloser, e
 
 			for {
 				node, err := exporter.Next()
-				if err == iavltree.ExportDone {
+				if err == iavltree.ErrorExportDone {
 					break
 				} else if err != nil {
 					chunkWriter.CloseWithError(err)

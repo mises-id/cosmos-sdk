@@ -65,3 +65,6 @@ replace github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210
 replace github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 
 replace github.com/tendermint/tendermint => github.com/mises-id/tendermint v0.34.15-0.20220303055734-a5c89353c3e2
+
+replace github.com/tendermint/tm-db => github.com/mises-id/tm-db v0.6.5-0.20221220153440-b50cc03f5327
+replace github.com/cosmos/iavl => github.com/mises-id/iavl v0.18.1-0.20221220155301-dd93d0c1ccd5
